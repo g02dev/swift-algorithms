@@ -3,99 +3,125 @@
 
     final class UnionFindTests: XCTestCase {
         
-        var sut: UnionFind!  // system under test
-        var sutSize: Int!
+        var uf: UnionFind<Int>!
         
         override func setUp() {
             super.setUp()
-            sutSize = 5
-            sut = UnionFind(size: sutSize)
+            uf = UnionFind()
         }
         
         override func tearDown() {
-            sutSize = nil
-            sut = nil
+            uf = nil
             super.tearDown()
         }
         
         // MARK: - Test init
         
         func testInit() {
-            XCTAssertEqual(sut.componentsCount, sutSize)
-            XCTAssertEqual(sut.parent.count, sutSize)
-            XCTAssertEqual(sut.rank.count, sutSize)
-
-            for i in 0..<sutSize {
-                XCTAssertEqual(sut.parent[i], i)
-                XCTAssertEqual(sut.rank[i], 0)
-            }
+            XCTAssertEqual(uf.count, 0)
+            XCTAssertEqual(uf.setsCount, 0)
         }
         
         
         // MARK: - Test find
         
         func testFind() {
-            sut.union(1, 2)  // [[0], [1, 2], [3], [4]]
-            XCTAssertEqual(sut.find(1), sut.find(2))
+            uf.union(1, 2)  // [[1, 2]]
+            XCTAssertEqual(uf.find(1), uf.find(2))
             
-            sut.union(2, 3)  // [[0], [1, 2, 3], [4]]
-            XCTAssertEqual(sut.find(1), sut.find(2))
-            XCTAssertEqual(sut.find(2), sut.find(3))
+            uf.union(2, 3)  // [[1, 2, 3]]
+            XCTAssertEqual(uf.find(1), uf.find(2))
+            XCTAssertEqual(uf.find(2), uf.find(3))
             
-            sut.union(0, 4)  // [[0, 4], [1, 2, 3]]
-            XCTAssertEqual(sut.find(0), sut.find(4))
+            uf.union(0, 4)  // [[0, 4], [1, 2, 3]]
+            XCTAssertEqual(uf.find(0), uf.find(4))
+            XCTAssertEqual(uf.find(1), uf.find(2))
+            XCTAssertEqual(uf.find(2), uf.find(3))
+            XCTAssertNotEqual(uf.find(0), uf.find(1))
             
-            sut.union(0, 1)  // [[0, 1, 2, 3, 4]]
-            XCTAssertEqual(sut.find(0), sut.find(1))
-            XCTAssertEqual(sut.find(1), sut.find(2))
-            XCTAssertEqual(sut.find(2), sut.find(3))
-            XCTAssertEqual(sut.find(3), sut.find(4))
+            uf.union(0, 1)  // [[0, 1, 2, 3, 4]]
+            XCTAssertEqual(uf.find(0), uf.find(1))
+            XCTAssertEqual(uf.find(1), uf.find(2))
+            XCTAssertEqual(uf.find(2), uf.find(3))
+            XCTAssertEqual(uf.find(3), uf.find(4))
         }
         
         
         // MARK: - Test union
         
         func testUnion_unites() {
-            XCTAssertTrue(sut.union(1, 2))  // [[0], [1, 2], [3], [4]]
-            XCTAssertTrue(sut.union(2, 3))  // [[0], [1, 2, 3], [4]]
-            XCTAssertTrue(sut.union(0, 4))  // [[0, 4], [1, 2, 3]]
-            XCTAssertTrue(sut.union(0, 1))  // [[0, 1, 2, 3, 4]]
+            XCTAssertTrue(uf.union(1, 2))  // [[0], [1, 2], [3], [4]]
+            XCTAssertTrue(uf.union(2, 3))  // [[0], [1, 2, 3], [4]]
+            XCTAssertTrue(uf.union(0, 4))  // [[0, 4], [1, 2, 3]]
+            XCTAssertTrue(uf.union(0, 1))  // [[0, 1, 2, 3, 4]]
         }
         
         func testUnion_doesntUnite() {
-            sut.union(1, 2)
-            sut.union(3, 4)
+            uf.union(1, 2)
+            uf.union(3, 4)
             
             // [[0], [1, 2], [3, 4]]
-            XCTAssertFalse(sut.union(0, 0))
-            XCTAssertFalse(sut.union(1, 2))
-            XCTAssertFalse(sut.union(2, 1))
-            XCTAssertFalse(sut.union(3, 4))
-            XCTAssertFalse(sut.union(4, 3))            
+            XCTAssertFalse(uf.union(0, 0))
+            XCTAssertFalse(uf.union(1, 2))
+            XCTAssertFalse(uf.union(2, 1))
+            XCTAssertFalse(uf.union(3, 4))
+            XCTAssertFalse(uf.union(4, 3))
         }
         
         // MARK: - Test isUnited
         
         func testIsUnited() {
-            sut.union(1, 2)
-            sut.union(3, 4)
+            uf.union(1, 2)
+            uf.union(3, 4)
             
             // [[0], [1, 2], [3, 4]]
             
-            for i in 0..<sutSize {
-                XCTAssertTrue(sut.isUnited(i, i))
+            for i in 0..<uf.count {
+                XCTAssertTrue(uf.isUnited(i, i))
             }
             
-            XCTAssertTrue(sut.isUnited(1, 2))
-            XCTAssertTrue(sut.isUnited(2, 1))
-            XCTAssertTrue(sut.isUnited(3, 4))
-            XCTAssertTrue(sut.isUnited(4, 3))
+            XCTAssertTrue(uf.isUnited(1, 2))
+            XCTAssertTrue(uf.isUnited(2, 1))
+            XCTAssertTrue(uf.isUnited(3, 4))
+            XCTAssertTrue(uf.isUnited(4, 3))
             
-            XCTAssertFalse(sut.isUnited(0, 1))
-            XCTAssertFalse(sut.isUnited(1, 0))
-            XCTAssertFalse(sut.isUnited(2, 3))
-            XCTAssertFalse(sut.isUnited(3, 2))
-            XCTAssertFalse(sut.isUnited(0, 4))
-            XCTAssertFalse(sut.isUnited(4, 0))
+            XCTAssertFalse(uf.isUnited(0, 1))
+            XCTAssertFalse(uf.isUnited(1, 0))
+            XCTAssertFalse(uf.isUnited(2, 3))
+            XCTAssertFalse(uf.isUnited(3, 2))
+            XCTAssertFalse(uf.isUnited(0, 4))
+            XCTAssertFalse(uf.isUnited(4, 0))
+        }
+        
+        // MARK: - Test count
+        
+        func testCount() {
+            XCTAssertTrue(uf.union(1, 2))  // [[1, 2]]
+            XCTAssertEqual(uf.count, 2)
+            
+            XCTAssertTrue(uf.union(2, 3))  // [[1, 2, 3]]
+            XCTAssertEqual(uf.count, 3)
+            
+            XCTAssertTrue(uf.union(0, 4))  // [[0, 4], [1, 2, 3]]
+            XCTAssertEqual(uf.count, 5)
+            
+            XCTAssertTrue(uf.union(0, 1))  // [[0, 1, 2, 3, 4]]
+            XCTAssertEqual(uf.count, 5)
+        }
+        
+        // MARK: - Test setsCount
+        
+        func testSetsCount() {
+            XCTAssertTrue(uf.union(1, 2))  // [[1, 2]]
+            XCTAssertEqual(uf.setsCount, 1)
+            
+            XCTAssertTrue(uf.union(2, 3))  // [[1, 2, 3]]
+            XCTAssertEqual(uf.setsCount, 1)
+            
+            XCTAssertTrue(uf.union(0, 4))  // [[0, 4], [1, 2, 3]]
+            XCTAssertEqual(uf.setsCount, 2)
+            
+            XCTAssertTrue(uf.union(0, 1))  // [[0, 1, 2, 3, 4]]
+            XCTAssertEqual(uf.setsCount, 1)
         }
     }

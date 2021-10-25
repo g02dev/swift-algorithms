@@ -1,49 +1,74 @@
-struct UnionFind {
+public struct UnionFind<T: Hashable> {
 
-    var componentsCount: Int
+    var setsCount: Int
     var parent: [Int]
     var rank: [Int]
+    var indices: [T: Int]
     
-    init(size: Int) {
-        componentsCount = size
-        rank = [Int](repeating: 0, count: size)
-        parent = Array(0..<size)
+    public var count: Int {
+        return parent.count
     }
     
-    mutating func find(_ x: Int) -> Int {
-        if parent[x] == x {
-            return x
+    init() {
+        setsCount = 0
+        rank = []
+        parent = []
+        indices = [:]
+    }
+    
+    public mutating func find(_ value: T) -> Int {
+        let index = getIndex(value)
+        return findByIndex(index)
+    }
+    
+    mutating func findByIndex(_ index: Int) -> Int {
+        if parent[index] == index {
+            return index
         }
         
-        parent[x] = find(parent[x])
-        return parent[x]
+        parent[index] = findByIndex(parent[index])
+        return parent[index]
     }
     
     @discardableResult
-    mutating func union(_ x: Int, _ y: Int) -> Bool {
-        let rootX = find(x)
-        let rootY = find(y)
+    public mutating func union(_ firstValue: T, _ secondValue: T) -> Bool {
+        let firstRoot = find(firstValue)
+        let secondRoot = find(secondValue)
         
-        if rootX == rootY {
+        if firstRoot == secondRoot {
             return false
         }
         
-        componentsCount -= 1
+        setsCount -= 1
         
-        if rank[rootX] < rank[rootY] {
-            parent[rootX] = rootY
-        } else if rank[rootX] > rank[rootY] {
-            parent[rootY] = rootX
+        if rank[firstRoot] < rank[secondRoot] {
+            parent[firstRoot] = secondRoot
+        } else if rank[firstRoot] > rank[secondRoot] {
+            parent[secondRoot] = firstRoot
         } else {
-            parent[rootY] = rootX
-            rank[rootX] += 1
+            parent[secondRoot] = firstRoot
+            rank[firstRoot] += 1
         }
         
         return true
     }
     
-    mutating func isUnited(_ x: Int, _ y: Int) -> Bool {
-        return find(x) == find(y)
+    public mutating func isUnited(_ firstValue: T, _ secondValue: T) -> Bool {
+        return find(firstValue) == find(secondValue)
+    }
+    
+    mutating func getIndex(_ value: T) -> Int {
+        if let index = indices[value] {
+            return index
+        }
+        
+        let index = count
+        indices[value] = index
+        parent.append(index)
+        rank.append(0)
+        setsCount += 1
+        
+        return index
     }
     
 }
